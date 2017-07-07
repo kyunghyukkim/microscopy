@@ -1,55 +1,24 @@
 # -*- coding: utf-8 -*-
-"""
-Creates scatter plots
-"""
 
-import sys, os
-import random
-import matplotlib as mlt
+# Creates scatter plots
+# Kiri Choi, 2017
+
+from __future__ import print_function, division
+
+import os
 import matplotlib.pyplot as plt
-import scipy
-import scipy.stats
 import numpy as np
-import math
-import scipy.optimize as opt
-from scipy import ndimage
 import seaborn
 import h5py
-import tables
-import re
-import itertools
 
-#clistpathlist = [r'J:\Kyung\051116\crop6\xy1\uclist.mat']
-
-clistpathlist = [r'J:\Kyung\051116\crop1\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop2\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop3\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop4\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop5\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop6\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop7\xy1\uclist.mat']
-
-#clistpathlist = [r'J:\Kyung\051716\crop1\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop2\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop3\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop4\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop5\xy1\uclist.mat']
-
-#                 r'J:\Kyung\052516\p1\crop1\xy1\uclist.mat',
-#                 r'J:\Kyung\052516\p1\crop2\xy1\uclist.mat',
-                 #r'J:\Kyung\052516\p2\crop1\xy2\uclist.mat']
-#clistpathlist = [r'J:\Kyung\051616\crop1\xy1\uclist.mat',
-#                 r'J:\Kyung\051616\crop2\xy1\uclist.mat',
-#                 r'J:\Kyung\051616\crop3\xy1\uclist.mat',
-#                 r'J:\Kyung\051616\crop4\xy1\uclist.mat']
-
-#r'J:\Kyung\050316\Venusmcherry\xy2\crop1\xy1\uclist.mat'
+clistpathlist = ['Path to uclist.mat']
 
 def idx(string, char):
   for key, x in enumerate(string):
     if char in x:
       return key
 
+#%% Reading data
 datalist = []
 data3dlist = []
 deflist = []
@@ -88,10 +57,9 @@ for i in range(len(clistpathlist)):
     def3dlist.append(row_data3Dlist)
     f.close()
     
-#%% exclude
+#%% Exclude
 if len(exclist) > 0:
     for i in range(len(exclist)):
-        #datalist[i] = np.delete(datalist[i], exclist[i], 1)
         for j in range(len(exclist[i])):
             datalist[i][:,np.int(exclist[i][j])] = np.nan
             data3dlist[i][j][:,np.int(exclist[i][j])] = np.nan
@@ -108,7 +76,8 @@ for i in range(len(clistpathlist)):
 cell_o_list = []
 
 for i in range(len(clistpathlist)):
-    cell_o_list.append((np.isnan(data3dlist[i][:,idx(def3dlist[i], 'fluor1 mean')][0,:]) == False).nonzero())
+    cell_o_list.append((np.isnan(data3dlist[i][:,idx(def3dlist[i], 
+                                    'fluor1 mean')][0,:]) == False).nonzero())
     
 print(cell_o_list)
 
@@ -117,14 +86,13 @@ exp_no = 0
 cell_no = 0
 line_no = 0
 gen_no = 8
-timediff1 = 0
+timediff1 = 0 # Delay amount
 timediff2 = 60
 timediff3 = 75
-timescale = 5
+timescale = 5 # Measurement interval
 numframe1 = timediff1/timescale
 numframe2 = timediff2/timescale
 numframe3 = timediff3/timescale
-
 
 gen_list_all = []
 lin_list_all = []
@@ -188,7 +156,7 @@ for k in range(len(cell_o_list)):
     lin_list_all.append(lin_list_temp1)
         
 
-#%%
+#%% Time Delay Correlation
 mcherry_link = []
 venus_link = []
 
@@ -217,9 +185,6 @@ for i in range(len(lin_list_all)):
         venus_link_temp1.append(venus_link_temp)
     mcherry_link.append(mcherry_link_temp1)
     venus_link.append(venus_link_temp1)
-
-#mcherry_link = [item for sublist in mcherry_link for item in sublist]
-#venus_link = [item for sublist in venus_link for item in sublist]
 
 mcherry_shift_all1 = []
 venus_shift_all1 = []
@@ -293,27 +258,16 @@ for i in range(len(lin_list_all)):
     mcherry_shift_all3.append(mcherry_shift_temp1)
     venus_shift_all3.append(venus_shift_temp1)
 
-#mcherry_shift_all_flat = [item for sublist in mcherry_shift_all for item in sublist]
-#venus_shift_all_flat = [item for sublist in venus_shift_all for item in sublist]
-#
-#for i in range(2):
-#    mcherry_shift_all_flat = [item for sublist in mcherry_shift_all_flat for item in sublist]
-#    venus_shift_all_flat = [item for sublist in venus_shift_all_flat for item in sublist]
-#
-#test, unique_ind = np.unique(mcherry_shift_all_flat, return_index = True)
-#re_ind = np.arange(len(venus_shift_all_flat))
-#re_ind = np.delete(re_ind, np.sort(unique_ind))
-#mcherry_shift_all_flat = np.delete(mcherry_shift_all_flat, re_ind)
-#venus_shift_all_flat = np.delete(venus_shift_all_flat, re_ind)
-#%%
+#%% Plotting
 scale = 2
 
-imagepath = r'J:\Images\shifted_dots_051116_interp_fixed'
+imagepath = 'Path to folder where images will be stored'
+
+if os.path.exists(imagepath) == False:
+    os.mkdir(imagepath)
 
 seaborn.set_style("white")
 sb = seaborn.hls_palette(8, l=.3, s=.8)
-
-#plt.ioff()
 
 for i in range(len(venus_shift_all1)):
     for j in range(len(venus_shift_all1[i])):
@@ -321,38 +275,20 @@ for i in range(len(venus_shift_all1)):
             fig = plt.gcf()
             fig.set_size_inches(8*scale,5*scale)
             ax = fig.add_subplot(111)
-            #ax.xaxis.set_tick_params(length=5*scale)
-            #ax.yaxis.set_tick_params(length=5*scale)
-            #ax.tick_params(axis='x', pad=10)
-            #ax.tick_params(axis='y', pad=20)
-            #ax.tick_params('both', length=15, width=3, which='major')
-            #ax.tick_params('both', length=10, width=3, which='minor')
-            #ax.spines['top'].set_linewidth(3)
-            #ax.spines['right'].set_linewidth(3)
-            #ax.spines['left'].set_linewidth(3)
-            #ax.spines['bottom'].set_linewidth(3)
             
-            #counts,xbins,ybins = np.histogram2d(venus_shift_all[i][j][k], mcherry_shift_all[i][j][k], bins=100, range = ([90, 160],[0, 20000]), normed=True)
-            #counts = ndimage.gaussian_filter(counts, sigma=3.0, order=0)
-            
-            #plt.contourf(np.transpose(counts),extent=[xbins.min(),xbins.max(),ybins.min(),ybins.max()],
-            #             levels = np.linspace(np.max(counts)/50, np.max(counts), 6), cmap=plt.cm.Reds, alpha=1.)
-            
-            plt.scatter(venus_shift_all1[i][j][k], mcherry_shift_all1[i][j][k], marker = 'o', color = sb[5], alpha = 1, s = 50)
-            plt.scatter(venus_shift_all2[i][j][k], mcherry_shift_all2[i][j][k], marker = 'o', color = sb[3], alpha = 1, s = 50)
-            plt.scatter(venus_shift_all3[i][j][k], mcherry_shift_all3[i][j][k], marker = 'o', color = sb[0], alpha = 1, s = 50)
-            
-            #plt.plot(venus_shift_all[exp_no][cell_no][line_no], mcherry_shift_all[exp_no][cell_no][line_no], ls = '', marker = 'o', color = sb[5], alpha = 1)
+            plt.scatter(venus_shift_all1[i][j][k], mcherry_shift_all1[i][j][k],
+                        marker = 'o', color = sb[5], alpha = 1, s = 50)
+            plt.scatter(venus_shift_all2[i][j][k], mcherry_shift_all2[i][j][k],
+                        marker = 'o', color = sb[3], alpha = 1, s = 50)
+            plt.scatter(venus_shift_all3[i][j][k], mcherry_shift_all3[i][j][k],
+                        marker = 'o', color = sb[0], alpha = 1, s = 50)
             
             plt.xticks(fontsize = 15*scale)
             plt.yticks(fontsize = 15*scale)
-            #plt.title("KK61", fontsize=80)
             plt.xlabel("Venus (AU)", fontsize=20*scale)
             plt.ylabel("mCherry (AU)", fontsize=20*scale)
             plt.axis([100, 145, 0, 16000])
-            #fig.set_dpi(1200)
-            fig.savefig(os.path.join(imagepath, '051116' + '_' + str(i) + '_' + str(j) + '_' + str(k) + '_all' + '.png')
-                                         , bbox_inches='tight')
-            #plt.close(fig)
+            #fig.savefig(os.path.join(imagepath, '051116' + '_' + str(i) + '_' + str(j) + '_' + str(k) + '_all' + '.png')
+            #                             , bbox_inches='tight')
             plt.show()
 

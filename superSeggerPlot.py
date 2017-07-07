@@ -1,54 +1,24 @@
 # -*- coding: utf-8 -*-
-"""
-Creates contour plot with scatter plot
-"""
 
-import sys, os
-import random
-import matplotlib as mlt
+# Creates contour plot with scatter plot
+# Kiri Choi, 2017
+
+from __future__ import print_function, division
+
 import matplotlib.pyplot as plt
-import scipy
-import scipy.stats
 import numpy as np
-import math
-import scipy.optimize as opt
 from scipy import ndimage
 import seaborn
 import h5py
-import tables
-import re
 
-#clistpathlist = [r'J:\Kyung\060916\crop2\xy1\uclist.mat']
-
-clistpathlist = [r'J:\Kyung\051116\crop1\xy1\uclist.mat', 
-                 r'J:\Kyung\051116\crop2\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop3\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop4\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop5\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop6\xy1\uclist.mat',
-                 r'J:\Kyung\051116\crop7\xy1\uclist.mat']
-
-#clistpathlist = [r'J:\Kyung\051716\crop1\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop2\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop3\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop4\xy1\uclist.mat',
-#                 r'J:\Kyung\051716\crop5\xy1\uclist.mat']
-
-#                 r'J:\Kyung\052516\p1\crop1\xy1\uclist.mat',
-#                 r'J:\Kyung\052516\p1\crop2\xy1\uclist.mat',
-                 #r'J:\Kyung\052516\p2\crop1\xy2\uclist.mat']
-#clistpathlist = [r'J:\Kyung\051616\crop1\xy1\uclist.mat',
-#                 r'J:\Kyung\051616\crop2\xy1\uclist.mat',
-#                 r'J:\Kyung\051616\crop3\xy1\uclist.mat',
-#                 r'J:\Kyung\051616\crop4\xy1\uclist.mat']
-
-#r'J:\Kyung\050316\Venusmcherry\xy2\crop1\xy1\uclist.mat'
+clistpathlist = ['Path to uclist.mat']
 
 def idx(string, char):
   for key, x in enumerate(string):
     if char in x:
       return key
 
+#%% Reading data
 datalist = []
 data3dlist = []
 deflist = []
@@ -87,14 +57,14 @@ for i in range(len(clistpathlist)):
     def3Dlist.append(row_data3Dlist)
     f.close()
     
-#%% exclude
+#%% Exclude
 if len(exclist) > 0:
     for i in range(len(exclist)):
         datalist[i] = np.delete(datalist[i], exclist[i], 1)
         for j in range(len(exclist[i])):
             data3dlist[i][j][:,np.int(exclist[i][j])] = np.nan
             
-#%%
+#%% Populate list
 f1 = []
 f2 = []
 
@@ -105,28 +75,18 @@ for i in range(len(datalist)):
 mcherry = [item for sublist in f1 for item in sublist]
 venus = [item for sublist in f2 for item in sublist]
 
-#%%
+#%% Plotting
 seaborn.set_style("white")
 sb = seaborn.hls_palette(8, l=.3, s=.8)
 
-#import colormaps as cmaps
 scale=1
 
 fig = plt.gcf()
 fig.set_size_inches(8*scale,5*scale)
 ax = fig.add_subplot(111)
-#ax.xaxis.set_tick_params(length=5*scale)
-#ax.yaxis.set_tick_params(length=5*scale)
-#ax.tick_params(axis='x', pad=10)
-#ax.tick_params(axis='y', pad=20)
-#ax.tick_params('both', length=15, width=3, which='major')
-#ax.tick_params('both', length=10, width=3, which='minor')
-#ax.spines['top'].set_linewidth(3)
-#ax.spines['right'].set_linewidth(3)
-#ax.spines['left'].set_linewidth(3)
-#ax.spines['bottom'].set_linewidth(3)
 
-counts,xbins,ybins = np.histogram2d(venus, mcherry, bins=100, range = ([90, 160],[0, 20000]), normed=True)
+counts,xbins,ybins = np.histogram2d(venus, mcherry, bins=100, 
+                                range = ([90, 160],[0, 20000]), normed=True)
 counts = ndimage.gaussian_filter(counts, sigma=3.0, order=0)
 
 plt.contourf(np.transpose(counts),extent=[xbins.min(),xbins.max(),ybins.min(),ybins.max()],
@@ -135,11 +95,9 @@ plt.scatter(venus, mcherry, marker = '.', color = sb[5], alpha = 0.3)
 
 plt.xticks(fontsize = 15*scale)
 plt.yticks(fontsize = 15*scale)
-#plt.title("KK61", fontsize=80)
 plt.xlabel("Venus (AU)", fontsize=20*scale)
 plt.ylabel("mCherry (AU)", fontsize=20*scale)
 plt.axis([95, 160, 0, 16000])
-#fig.set_dpi(1200)
 
 plt.show()
     
